@@ -1,0 +1,407 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "FastAPI",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/start_charge": {
+            "post": {
+                "summary": "Start Charge",
+                "operationId": "start_charge_start_charge_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StartChargeRequestSchema"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StartChargeResponseSchema"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/{transaction_id}/charge_update": {
+            "post": {
+                "summary": "Charge Update",
+                "operationId": "charge_update__transaction_id__charge_update_post",
+                "parameters": [
+                    {
+                        "name": "transaction_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Transaction Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChargeUpdateRequestSchema"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/{transaction_id}/charge_end": {
+            "post": {
+                "summary": "Charge End",
+                "operationId": "charge_end__transaction_id__charge_end_post",
+                "parameters": [
+                    {
+                        "name": "transaction_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Transaction Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/charge_sessions": {
+            "get": {
+                "summary": "Get Charge Sessions",
+                "operationId": "get_charge_sessions_charge_sessions_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/SessionResponseSchema"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Get Charge Sessions Charge Sessions Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ChargeUpdateRequestSchema": {
+                "properties": {
+                    "sample_time_increment": {
+                        "type": "integer",
+                        "title": "Sample Time Increment"
+                    },
+                    "soc": {
+                        "type": "number",
+                        "title": "Soc"
+                    },
+                    "temp_c": {
+                        "type": "number",
+                        "title": "Temp C"
+                    },
+                    "avg_power_w": {
+                        "type": "number",
+                        "title": "Avg Power W"
+                    },
+                    "avg_current_a": {
+                        "type": "number",
+                        "title": "Avg Current A"
+                    },
+                    "avg_voltage_v": {
+                        "type": "number",
+                        "title": "Avg Voltage V"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "sample_time_increment",
+                    "soc",
+                    "temp_c",
+                    "avg_power_w",
+                    "avg_current_a",
+                    "avg_voltage_v"
+                ],
+                "title": "ChargeUpdateRequestSchema"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "SessionResponseSchema": {
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Transaction Id"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Started At"
+                    },
+                    "ended_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Ended At"
+                    },
+                    "soc_start": {
+                        "type": "number",
+                        "title": "Soc Start",
+                        "examples": [
+                            0.25
+                        ]
+                    },
+                    "soc_end": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Soc End",
+                        "examples": [
+                            0.85
+                        ]
+                    },
+                    "energy_added_kwh": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Energy Added Kwh",
+                        "examples": [
+                            80
+                        ]
+                    },
+                    "avg_temp_c": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Avg Temp C",
+                        "examples": [
+                            15.5
+                        ]
+                    },
+                    "location_name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location Name",
+                        "examples": [
+                            "Home"
+                        ]
+                    },
+                    "soh": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Soh",
+                        "examples": [
+                            0.9
+                        ]
+                    },
+                    "health_grade": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Health Grade",
+                        "examples": [
+                            "Normal"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "transaction_id",
+                    "started_at",
+                    "ended_at",
+                    "soc_start",
+                    "soc_end",
+                    "energy_added_kwh",
+                    "avg_temp_c",
+                    "location_name",
+                    "soh",
+                    "health_grade"
+                ],
+                "title": "SessionResponseSchema"
+            },
+            "StartChargeRequestSchema": {
+                "properties": {
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Started At"
+                    },
+                    "soc_start": {
+                        "type": "number",
+                        "title": "Soc Start"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "started_at",
+                    "soc_start"
+                ],
+                "title": "StartChargeRequestSchema"
+            },
+            "StartChargeResponseSchema": {
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Transaction Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "transaction_id"
+                ],
+                "title": "StartChargeResponseSchema"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}
