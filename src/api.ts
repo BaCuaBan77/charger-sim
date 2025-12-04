@@ -50,4 +50,16 @@ export async function sendChargeUpdate(
   }
 }
 
+export async function endCharge(transactionId: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/${transactionId}/charge_end`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to end charge: ${res.status} ${text}`);
+  }
+}
+
 

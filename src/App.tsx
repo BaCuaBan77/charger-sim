@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import type { ChargeUpdatePayload } from './api';
-import { sendChargeUpdate, startCharge } from './api';
+import { sendChargeUpdate, startCharge, endCharge } from './api';
 
 type SessionStatus = 'idle' | 'starting' | 'running' | 'stopping' | 'error';
 
@@ -17,7 +17,7 @@ const INITIAL_SOC = 0.2;
 const TARGET_SOC = 0.9;
 const INTERVAL_SECONDS = 10;
 const CHARGE_RATE_PER_KWH = 0.25; // $0.25 per kWh
-const CHARGER_ID = '994.6614.3833 - A CCS';
+const CHARGER_ID = 'Charger ID: King_of_the_North';
 
 function generateNextState(prev: ChargerState): ChargerState {
   // Simple EV-style charging curve: high power initially, taper near TARGET_SOC
@@ -169,11 +169,11 @@ function App() {
 
           const payload: ChargeUpdatePayload = {
             sample_time_increment: INTERVAL_SECONDS,
-            soc: next.soc,
-            temp_c: next.tempC,
-            avg_power_w: next.powerW,
-            avg_current_a: next.currentA,
-            avg_voltage_v: next.voltageV,
+            soc: parseFloat(next.soc.toFixed(2)),
+            temp_c: parseFloat(next.tempC.toFixed(2)),
+            avg_power_w: parseFloat(next.powerW.toFixed(2)),
+            avg_current_a: parseFloat(next.currentA.toFixed(2)),
+            avg_voltage_v: parseFloat(next.voltageV.toFixed(2)),
           };
 
           if (transaction_id) {
@@ -200,14 +200,30 @@ function App() {
     }
   };
 
-  const stopSession = () => {
+  const stopSession = async () => {
     setStatus('stopping');
+    
+    // Stop intervals
     if (intervalRef.current !== null) {
       window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
     if (timeIntervalRef.current !== null) {
       window.clearInterval(timeIntervalRef.current);
+      timeIntervalRef.current = null;
     }
+
+    // Notify backend that charging has ended
+    if (transactionId) {
+      try {
+        await endCharge(transactionId);
+      } catch (e: any) {
+        console.error('Failed to end charge session:', e);
+        // Continue with reset even if API call fails
+      }
+    }
+
+    // Reset state
     setStatus('idle');
     setTransactionId(null);
     setStartTime(null);
