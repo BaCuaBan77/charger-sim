@@ -107,6 +107,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChargeUpdateRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Successful Response",
@@ -205,12 +215,20 @@
                 "type": "object",
                 "title": "HTTPValidationError"
             },
+            "HealthGrade": {
+                "type": "string",
+                "enum": [
+                    "Degraded",
+                    "Normal"
+                ],
+                "title": "HealthGrade"
+            },
             "SessionResponseSchema": {
                 "properties": {
-                    "transaction_id": {
+                    "id": {
                         "type": "string",
                         "format": "uuid",
-                        "title": "Transaction Id"
+                        "title": "Id"
                     },
                     "started_at": {
                         "type": "string",
@@ -309,13 +327,12 @@
                     "health_grade": {
                         "anyOf": [
                             {
-                                "type": "string"
+                                "$ref": "#/components/schemas/HealthGrade"
                             },
                             {
                                 "type": "null"
                             }
                         ],
-                        "title": "Health Grade",
                         "examples": [
                             "Normal"
                         ]
@@ -323,7 +340,7 @@
                 },
                 "type": "object",
                 "required": [
-                    "transaction_id",
+                    "id",
                     "started_at",
                     "ended_at",
                     "soc_start",
@@ -338,11 +355,6 @@
             },
             "StartChargeRequestSchema": {
                 "properties": {
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "title": "Started At"
-                    },
                     "soc_start": {
                         "type": "number",
                         "title": "Soc Start"
@@ -350,7 +362,6 @@
                 },
                 "type": "object",
                 "required": [
-                    "started_at",
                     "soc_start"
                 ],
                 "title": "StartChargeRequestSchema"

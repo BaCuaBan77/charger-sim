@@ -1,7 +1,6 @@
 // In development, use /api which is proxied by Vite to the backend
 // In production, use the configured API base URL or default to localhost:8000
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.DEV ? '/api' : 'http://localhost:8000');
+const API_BASE_URL = 'http://10.68.123.203:8000';
 
 export interface StartChargeResponse {
   transaction_id: string;
@@ -50,10 +49,14 @@ export async function sendChargeUpdate(
   }
 }
 
-export async function endCharge(transactionId: string): Promise<void> {
+export async function endCharge(
+  transactionId: string,
+  payload: ChargeUpdatePayload,
+): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/${transactionId}/charge_end`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {

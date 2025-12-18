@@ -6,28 +6,30 @@ import { sendChargeUpdate, startCharge, endCharge } from './api';
 type SessionStatus = 'idle' | 'starting' | 'running' | 'stopping' | 'error';
 
 interface ChargerState {
-  soc: number; // 0-1
+  soc: number; // 0-100 (percentage)
   powerW: number;
   voltageV: number;
   currentA: number;
   tempC: number;
 }
 
-const INITIAL_SOC = 0.2;
-const TARGET_SOC = 0.9;
-const INTERVAL_SECONDS = 10;
+const INITIAL_SOC = 20; // 20%
+const TARGET_SOC = 90; // 90%
+const INTERVAL_SECONDS = 1; // Update every second
 const CHARGE_RATE_PER_KWH = 0.25; // $0.25 per kWh
 const CHARGER_ID = 'Charger ID: King_of_the_North';
 
 function generateNextState(prev: ChargerState): ChargerState {
   // Simple EV-style charging curve: high power initially, taper near TARGET_SOC
-  const soc = Math.min(TARGET_SOC, prev.soc + 0.01 + Math.random() * 0.01);
+  // SOC increases by 1-2% per second
+  const soc = Math.min(TARGET_SOC, prev.soc + 1 + Math.random() * 1);
 
   // Base voltage around 400V, small noise
   const voltageV = 380 + Math.random() * 40;
 
-  // Power tapers as SOC increases
-  const socFactor = 1 - Math.max(0, soc - 0.6) * 1.5; // reduce after 60% SOC
+  // Power tapers as SOC increases (reduce after 60%)
+  const socPercent = soc / 100; // Convert to 0-1 for calculations
+  const socFactor = 1 - Math.max(0, socPercent - 0.6) * 1.5;
   const maxPower = 50000; // 50 kW DC fast charger (more realistic for the design)
   const powerBase = maxPower * Math.max(0.2, socFactor);
   const powerW = powerBase * (0.9 + Math.random() * 0.2);
@@ -57,8 +59,8 @@ function formatTime12Hour(): string {
 function CircularGauge({ percentage }: { percentage: number }) {
   const radius = 120;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percentage / 100) * circumference;
-  const normalizedPercentage = Math.min(100, Math.max(0, percentage * 100));
+  const normalizedPercentage = Math.min(100, Math.max(0, percentage));
+  const offset = circumference - (normalizedPercentage / 100) * circumference;
 
   return (
     <div className="circular-gauge">
@@ -149,7 +151,7 @@ function App() {
     try {
       const sessionStartTime = new Date();
       const startedAt = sessionStartTime.toISOString();
-      const { transaction_id } = await startCharge(startedAt, INITIAL_SOC);
+      const { transaction_id } = await startCharge(startedAt, parseFloat(INITIAL_SOC.toFixed(2)));
       setTransactionId(transaction_id);
       setStartTime(sessionStartTime);
       setElapsedSeconds(0);
@@ -213,10 +215,18 @@ function App() {
       timeIntervalRef.current = null;
     }
 
-    // Notify backend that charging has ended
+    // Notify backend that charging has ended with final metrics
     if (transactionId) {
       try {
-        await endCharge(transactionId);
+        const finalPayload: ChargeUpdatePayload = {
+          sample_time_increment: INTERVAL_SECONDS,
+          soc: parseFloat(chargerState.soc.toFixed(2)),
+          temp_c: parseFloat(chargerState.tempC.toFixed(2)),
+          avg_power_w: parseFloat(chargerState.powerW.toFixed(2)),
+          avg_current_a: parseFloat(chargerState.currentA.toFixed(2)),
+          avg_voltage_v: parseFloat(chargerState.voltageV.toFixed(2)),
+        };
+        await endCharge(transactionId, finalPayload);
       } catch (e: any) {
         console.error('Failed to end charge session:', e);
         // Continue with reset even if API call fails

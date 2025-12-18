@@ -1,6 +1,12 @@
 # EV Charger Simulator
 
-A React-based simulator for an EV charging station that connects to a backend. The simulator displays real-time charging data including State of Charge (SOC), power, voltage, current, and temperature, while automatically sending charge updates to the backend API every 10 seconds.
+![EV Charger Simulator](Thumbnail.jpeg)
+
+## Abstract
+
+A simple React-based simulator for an EV charging station that connects to a backend. The simulator displays real-time charging data including State of Charge (SOC), power, voltage, current, and temperature, while automatically sending charge updates to the backend API every second.
+
+The simulator generates realistic mock charging data using an algorithm that mimics real EV charging behavior. The **State of Charge (SOC)** starts at 20% and increases by 1-2% per second until reaching 90%, simulating a typical fast-charging session. The **power output** follows a realistic charging curve: it starts at maximum capacity (~50 kW) and gradually tapers as the battery approaches higher SOC levels, with more aggressive tapering after 60% to protect battery health. **Voltage** varies realistically between 380-420V (typical for DC fast charging), while **current** is dynamically calculated from power and voltage using Ohm's law (I = P/V). **Battery temperature** gradually increases over time to simulate the heat generated during charging. All numeric values are rounded to 2 decimal places before being sent to the backend API. 
 
 ## Local Development Setup
 
@@ -173,6 +179,14 @@ The simulator generates realistic EV charging behavior:
 - **Voltage Range**: 380-420V (typical for DC fast charging)
 - **Temperature**: Gradually increases from 20°C
 - **Update Interval**: 10 seconds
+
+## Technologies
+
+- React (v19.2.0)
+- TypeScript (v5.9.3)
+- Vite (v7.2.4)
+- React DOM (v19.2.0)
+- ESLint (v9.39.1)
 
 ## License
 
